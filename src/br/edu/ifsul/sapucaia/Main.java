@@ -6,7 +6,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.interfaces.PBEKey;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -52,11 +51,11 @@ public class Main {
         PBEKey chaveSecreta = GeradorDeChaveSecreta.gerarChaveSecreta(senha);
 
         // converte array de bytes em String
-        String hex = new BigInteger(1, chaveSecreta.getEncoded())
+        String hexadecimal = new BigInteger(1, chaveSecreta.getEncoded())
                 .toString(16);
 
         // printa no console a chave secreta
-        output("Chave secreta: " + hex);
+        output("Chave secreta: " + hexadecimal);
 
         return chaveSecreta;
     }
@@ -70,7 +69,7 @@ public class Main {
 
         // criptografa o texto digitado
         byte[] textoCriptografado = CriptografiaSimetrica.criptografar(
-                texto.getBytes(StandardCharsets.UTF_8),
+                texto,
                 chaveSecreta.getEncoded()
         );
 

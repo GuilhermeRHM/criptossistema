@@ -19,7 +19,7 @@ public class CriptografiaSimetrica {
         }
     }
 
-    public static byte[] criptografar(byte[] bytes, byte[] bytesDeChave)
+    public static byte[] criptografar(String texto, byte[] bytesDeChave)
             throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, BadPaddingException,
             IllegalBlockSizeException {
@@ -30,7 +30,7 @@ public class CriptografiaSimetrica {
         cifra.init(Cipher.ENCRYPT_MODE, chaveSecreta);
 
         // retorna o texto criptografado
-        return cifra.doFinal(bytes);
+        return cifra.doFinal(texto.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String descriptografar(

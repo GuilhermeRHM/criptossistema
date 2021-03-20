@@ -3,7 +3,9 @@ package br.edu.ifsul.sapucaia;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.interfaces.PBEKey;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -26,7 +28,7 @@ public class Main {
     }
 
     private static void output(String mensagem) {
-        String formato = "\n[%s] %s";
+        String formato = "[%s] %s";
 
         System.out.printf(
                 formato,
@@ -35,87 +37,97 @@ public class Main {
         );
     }
 
-    private static String input() {
-        return scanner.nextLine();
-    }
-
     private static String input(String mensagem) {
         output(mensagem);
 
         return scanner.nextLine();
     }
 
-    private static byte[] gerarChaveSecretaComSenha()
-            throws InvalidKeySpecException, NoSuchAlgorithmException, UnsupportedEncodingException {
+    private static PBEKey gerarChaveSecretaComSenha()
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        // usuário digita a senha
         String senha = input("Digite sua senha: ");
 
-        byte[] chaveSecreta = GeradorDeChaveSecreta.gerarChaveSecreta(senha);
+        // gera a chave secreta baseada na senha
+        PBEKey chaveSecreta = GeradorDeChaveSecreta.gerarChaveSecreta(senha);
 
-        output(
-                String.format(
-                        "Chave secreta: %s",
-                        chaveSecreta
-                )
-        );
+        // converte array de bytes em String
+        String hex = new BigInteger(1, chaveSecreta.getEncoded())
+                .toString(16);
+
+        // printa no console a chave secreta
+        output("Chave secreta: " + hex);
 
         return chaveSecreta;
     }
 
-    private static void cifragemEDecifragemComCriptografiaSimetrica(byte[] chaveSecreta)
+    private static void cifragemEDecifragemComCriptografiaSimetrica(PBEKey chaveSecreta)
             throws IllegalBlockSizeException, InvalidKeyException,
             BadPaddingException, NoSuchAlgorithmException,
-            NoSuchPaddingException, UnsupportedEncodingException {
+            NoSuchPaddingException {
+        // usuario digita texto para ser criptografado
         String texto = input("Digite texto para criptografar: ");
 
+        // criptografa o texto digitado
         byte[] textoCriptografado = CriptografiaSimetrica.criptografar(
                 texto.getBytes(StandardCharsets.UTF_8),
-                chaveSecreta
+                chaveSecreta.getEncoded()
         );
+
+        // printa no console o texto criptografado
         output(
                 String.format(
                         "Texto criptografado: %s\n",
-                        textoCriptografado
+                        new BigInteger(
+                                1,
+                                textoCriptografado
+                        ).toString(16)
                 )
         );
 
-        byte[] textoDescriptografado = CriptografiaSimetrica.descriptografar(
+        // descriptografa o texto
+        String textoDescriptografado = CriptografiaSimetrica.descriptografar(
                 textoCriptografado,
-                chaveSecreta
+                chaveSecreta.getEncoded()
         );
+
+        // printa no console o texto descriptografado
         output(
                 String.format(
                         "Texto descriptografado: %s\n",
-                        new String(textoDescriptografado, StandardCharsets.UTF_8)
+                        textoDescriptografado
                 )
         );
     }
 
-    private static void cifragemEDecifragemComCriptografiaAssimetrica(byte[] chaveSecreta)
+    private static void cifragemEDecifragemComCriptografiaAssimetrica(String chaveSecreta)
             throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, BadPaddingException,
             IllegalBlockSizeException, UnsupportedEncodingException {
         KeyPair parDeChaves = CriptografiaAssimetrica.gerarParDeChaves();
 
         byte[] chaveCriptografada = CriptografiaAssimetrica.criptografar(
-                chaveSecreta.toString()
-                        .getBytes(StandardCharsets.UTF_8),
+                chaveSecreta,
                 parDeChaves.getPrivate()
         );
         output(
                 String.format(
                         "Chave criptografada: %s\n",
-                        chaveCriptografada
+                        new BigInteger(
+                                1,
+                                chaveCriptografada
+                        ).toString(16)
                 )
         );
 
-        byte[] chaveDescriptografada = CriptografiaAssimetrica.descriptografar(
+        String chaveDescriptografada = CriptografiaAssimetrica.descriptografar(
                 chaveCriptografada,
                 parDeChaves.getPublic()
         );
         output(
                 String.format(
                         "Chave descriptografada: %s\n\n",
-                        new String(chaveDescriptografada, StandardCharsets.UTF_8)
+                        chaveDescriptografada
                 )
         );
     }
@@ -126,23 +138,31 @@ public class Main {
             InvalidKeySpecException, UnsupportedEncodingException {
         System.out.println(
                 "\n===================================================================================================\n" +
-                "Funcionalidade 1: Geração de uma chave secreta baseada em uma senha do usuário" +
-                "\n==================================================================================================="
+                        "Funcionalidade 1: Geração de uma chave secreta baseada em uma senha do usuário" +
+                        "\n===================================================================================================\n"
         );
-        byte[] chaveSecreta = gerarChaveSecretaComSenha();
+        // gera a chave secreta baseada na senha digitada
+        PBEKey chaveSecreta = gerarChaveSecretaComSenha();
 
         System.out.println(
                 "\n\n===================================================================================================\n" +
-                "Funcionalidade 2: Cifragem e decifragem de dados com criptografia simétrica usando a chave secreta" +
-                "\n==================================================================================================="
+                        "Funcionalidade 2: Cifragem e decifragem de dados com criptografia simétrica usando a chave secreta" +
+                        "\n===================================================================================================\n"
         );
+        // cifra e decifra dados com a chave secreta
         cifragemEDecifragemComCriptografiaSimetrica(chaveSecreta);
 
         System.out.println(
                 "\n===================================================================================================\n" +
-                "Funcionalidade 3: Cifragem e decifragem da chave através do uso de criptografia assimétrica" +
-                "\n==================================================================================================="
+                        "Funcionalidade 3: Cifragem e decifragem da chave através do uso de criptografia assimétrica" +
+                        "\n===================================================================================================\n"
         );
-        cifragemEDecifragemComCriptografiaAssimetrica(chaveSecreta);
+        // converte a chave secreta para uma HexString e executa sua cifragem e decifragem
+        cifragemEDecifragemComCriptografiaAssimetrica(
+                new BigInteger(
+                        1,
+                        chaveSecreta.getEncoded()
+                ).toString(16)
+        );
     }
 }

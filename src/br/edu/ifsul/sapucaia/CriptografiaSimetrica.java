@@ -12,6 +12,7 @@ public class CriptografiaSimetrica {
 
     static {
         try {
+            // cria uma instancia de Cifra utilizando o algoritmo AES
             cifra = Cipher.getInstance(ALGORITMO_SIMETRICO);
         } catch (Exception e) {
             e.printStackTrace();
@@ -22,24 +23,30 @@ public class CriptografiaSimetrica {
             throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, BadPaddingException,
             IllegalBlockSizeException {
+        // cria uma chave secreta utilizando os bytes da chave secreta utilizando o algoritmo AES
         SecretKey chaveSecreta = new SecretKeySpec(bytesDeChave, ALGORITMO_SIMETRICO);
 
+        // inicializa a Cifra para criptografar utilizando a chave secreta
         cifra.init(Cipher.ENCRYPT_MODE, chaveSecreta);
 
+        // retorna o texto criptografado
         return cifra.doFinal(bytes);
     }
 
-    public static byte[] descriptografar(
+    public static String descriptografar(
             byte[] bytes,
             byte[] bytesDeChave
     )
             throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidKeyException, BadPaddingException,
             IllegalBlockSizeException {
+        // cria uma chave secreta utilizando os bytes da chave secreta utilizando o algoritmo AES
         SecretKey chaveSecreta = new SecretKeySpec(bytesDeChave, ALGORITMO_SIMETRICO);
 
+        // inicializa a Cifra para descriptografar utilizando a chave secreta
         cifra.init(Cipher.DECRYPT_MODE, chaveSecreta);
 
-        return cifra.doFinal(bytes);
+        // retorna o texto descriptografado
+        return new String(cifra.doFinal(bytes), StandardCharsets.UTF_8);
     }
 }

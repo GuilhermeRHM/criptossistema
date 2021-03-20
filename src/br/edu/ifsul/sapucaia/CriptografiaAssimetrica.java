@@ -7,13 +7,10 @@ import javax.crypto.NoSuchPaddingException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.util.Base64;
 
 public class CriptografiaAssimetrica {
     private static final String ALGORITMO_ASSIMETRICO = "RSA";
     private static final int TAMANHO_DA_CHAVE_RSA = 4096;
-    private static final Base64.Encoder ENCODER = Base64.getEncoder();
-    private static final Base64.Decoder DECODER = Base64.getDecoder();
     private static KeyPairGenerator geradorDeParDeChaves;
     private static KeyPair parDeChaves;
     private static PrivateKey chavePrivada;
@@ -33,22 +30,24 @@ public class CriptografiaAssimetrica {
         return parDeChaves;
     }
 
-    public static byte[] criptografar(byte[] bytes, PrivateKey chavePrivada)
+    public static byte[] criptografar(String texto, PrivateKey chavePrivada)
             throws NoSuchAlgorithmException, NoSuchPaddingException,
             UnsupportedEncodingException, IllegalBlockSizeException,
             BadPaddingException, InvalidKeyException {
+        // inicializa o objeto de cifra para criptografar passando a chave privada
         cifra.init(Cipher.ENCRYPT_MODE, chavePrivada);
 
-        return ENCODER.encode(
-                cifra.doFinal(bytes)
-        );
+        // retorna o array de byte do texto criptografado
+        return cifra.doFinal(texto.getBytes(StandardCharsets.UTF_8));
     }
 
-    public static byte[] descriptografar(byte[] bytes, PublicKey chavePublica)
+    public static String descriptografar(byte[] bytes, PublicKey chavePublica)
             throws InvalidKeyException, UnsupportedEncodingException,
             IllegalBlockSizeException, BadPaddingException {
+        // inicializa o objeto de cifra para descriptografar passando a chave publica
         cifra.init(Cipher.DECRYPT_MODE, chavePublica);
 
-        return cifra.doFinal(DECODER.decode(bytes));
+        // retorna a String do texto descriptografado
+        return new String(cifra.doFinal(bytes), StandardCharsets.UTF_8);
     }
 }
